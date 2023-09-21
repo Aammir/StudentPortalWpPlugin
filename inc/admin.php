@@ -42,7 +42,17 @@
 
         <tr>
             <td><label for="grade">Grade</label></td>
-            <td><input type="text" class="regular-text" name="grade" id="grade" data-name="Grade"></td>
+            <td>
+                <select name="grade" id="grade" class="regular-text" data-name="Grade">
+                    <option value=""></option>
+                    <option value="A">A</option>
+                    <option value="B">B</option>
+                    <option value="C">C</option>
+                    <option value="D">D</option>
+                    <option value="E">E</option>
+                    <option value="F">F</option>
+                </select>
+            </td>
         </tr>
         <tr>
             <td><label for="student_email">Email</label></td>
@@ -87,7 +97,7 @@ function student_save()
                     // Validate each input
                     var valid = true;
 
-                    $('input').each(function () {
+                    $('#add_student').find('input, select').each(function () {
                         var input = $(this);
                         var fieldName = input.data('name');
                         var value = input.val();
@@ -96,7 +106,7 @@ function student_save()
                             valid = false;
                             input.addClass('error-border');
                             input.after('<div class="error">' + fieldName + ' is required</div>');
-                        } else if (input.attr('type') === 'radio' && !$('input[name="' + fieldName + '"]:checked').length) {
+                        } else if (input.attr('type') === 'radio' && !$('input[name="gender"]:checked').length) {
                             valid = false;
                             input.closest('td').append('<div class="error ' + fieldName + '_error ">' + fieldName + ' is required</div>');
                         } else if (fieldName === 'student_email' && !isValidEmail(value)) {
@@ -104,18 +114,46 @@ function student_save()
                             input.addClass('error-border');
                             input.after('<div class="error">Invalid email format</div>');
                         }
+                        else if ($('#grade').val() == '') {
+                            valid = false;
+                            input.addClass('error-border');
+                            input.after('<div class="error">' + fieldName + ' is required</div>');
+                        }
 
                     });
 
                     if (valid) {
-                        alert('Everything is OK');
-                        // Submit the form here if needed
-                        // $('#add_student').submit();
+                        let form_data = $('#add_student').serialize();
+                        alert(form_data);
+
+                        let the_url = "<?php echo admin_url('admin-ajax.php') ?>?action=add_student";
+                        /*$.ajax({
+                            //debugger;
+                            url: the_url,
+                            type: "post",
+                            dataType: "json",
+                            //                    async: false
+                            data: form_data,
+                            //                    beforeSend: ez_loading_func()
+                        }).done(function (response) {
+                            // debugger;
+                            // console.log(response);
+                            // if (response.Status == 1) {
+                            //     SuccessMsg(response.MSG);
+                            //     $('form#add_student')[0].reset();
+                                 
+                                 
+                            //     // get_records();
+                            // } else {
+                            //     // ErrorMsg(response.MSG);
+
+                            // }
+                        }); //ajax done */
                     }
                 });
 
                 // Remove error messages and styles on input focus
-                $('input').on('input focus', function () {
+                $('input, select').on('input focus', function () {
                     $(this).removeClass('error-border');
                     $(this).siblings('.error').remove();
                 });
@@ -123,6 +161,7 @@ function student_save()
                     var fieldName = $(this).attr('name');
                     $('input[name="' + fieldName + '"]').removeClass('error-border');
                     $('input[name="' + fieldName + '"]').closest('td').find('.error').remove();
+                    valid = true;
                 });
 
                 // Email validation function
@@ -135,4 +174,15 @@ function student_save()
         })(jQuery);	
     </script>
     <?php
+}
+
+
+// add_student
+add_action('wp_ajax_add_student', 'add_student');
+add_action('wp_ajax_nopriv_add_student', 'add_student');
+
+function add_student()
+{
+    print_r($_POST);
+    exit;
 }
