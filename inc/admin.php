@@ -1,34 +1,65 @@
+<style>
+    .error {
+        color: red;
+    }
+
+    .error-border {
+        border: 1px solid red;
+    }
+
+    .notice-error,
+    div.error {
+        display: inline-block;
+        border-color: transparent;
+        background: transparent;
+        border-left-color: #d63638;
+    }
+
+    .Gender_error:nth-of-type(2) {
+        display: none !important;
+    }
+</style>
 <h1 class="text-center">Add Students</h1>
 <form action="" id="add_student">
     <table class="form-table">
         <tr>
             <td><label for="first_name">First Name</label></td>
-            <td><input type="text" class="regular-text" name="first_name" id="first_name"></td>
+            <td><input type="text" class="regular-text" name="first_name" id="first_name" data-name="First Name"></td>
         </tr>
         <tr>
             <td><label for="last_name">Last Name</label></td>
-            <td><input type="text" class="regular-text" name="last_name" id="last_name"></td>
+            <td><input type="text" class="regular-text" name="last_name" id="last_name" data-name="Last Name"></td>
         </tr>
         <tr>
             <td><label for="guardian_name">Guardian Name</label></td>
-            <td><input type="text" class="regular-text" name="guardian_name" id="guardian_name"></td>
+            <td><input type="text" class="regular-text" name="guardian_name" id="guardian_name"
+                    data-name="Guardian Name"></td>
         </tr>
         <tr>
             <td><label for="of_class">Class</label></td>
-            <td><input type="text" class="regular-text" name="of_class" id="of_class"></td>
+            <td><input type="text" class="regular-text" name="of_class" id="of_class" data-name="Class"></td>
         </tr>
 
         <tr>
             <td><label for="grade">Grade</label></td>
-            <td><input type="text" class="regular-text" name="grade" id="grade"></td>
+            <td><input type="text" class="regular-text" name="grade" id="grade" data-name="Grade"></td>
         </tr>
         <tr>
             <td><label for="student_email">Email</label></td>
-            <td><input type="text" class="regular-text" name="student_email" id="student_email"></td>
+            <td><input type="text" class="regular-text" name="student_email" id="student_email" data-name="Email"></td>
         </tr>
         <tr>
             <td><label for="password">Password</label></td>
-            <td><input type="text" class="regular-text" name="password" id="password"></td>
+            <td><input type="text" class="regular-text" name="password" id="password" data-name="Password"></td>
+        </tr>
+        <tr>
+            <td><label for="gender-m">Gender</label></td>
+            <td>
+                <label><input type="radio" class="radio" name="gender" id="gender-m" value="male" data-name="Gender">
+                    Male</label>
+                <label><input type="radio" class="radio" name="gender" id="gender-f" value="female" data-name="Gender">
+                    Female</label>
+            </td>
         </tr>
     </table>
     <p class="submit">
@@ -43,48 +74,63 @@ function student_save()
 {
     ?>
     <script>
-        function validateInput(input, errorMessage) {
-            var value = input.val();
-            var errorSpan = input.next(".error-msg");
-
-            if (value.trim() === "") {
-                errorSpan.text(errorMessage);
-                return false;
-            } else {
-                errorSpan.text(""); // Clear the error message
-                return true;
-            }
-        }
-
-
         (function ($) {
             $(document).ready(function () {
-                console.log('noConf added!');
-                $(document).on('submit', '#add_student', function (event) {
-                    event.preventDefault();
-                    let formData = $(this).serialize();
+                //
+                $('#add_student').on('submit', function (e) {
+                    e.preventDefault();
 
-                    var first_name = $("#first_name");
-                    var last_name = $("#last_name");
-                    var guardian_name = $("#guardian_name");
-                    var of_class = $("#of_class");
-                    var grade = $("#grade");
-                    var student_email = $("#student_email");
-                    var password = $("#password");
+                    // Reset previous error messages and styles
+                    $('.error').remove();
+                    $('.error-border').removeClass('error-border');
 
-                    var isFNameValid = validateInput(first_name, "First name is required.");
-                    var isLNameValid = validateInput(last_name, "Last name is required.");
-                    var isEmailValid = validateInput(student_email, "Email is required.");
-                    var isPasswordValid = validateInput(password, "Password is required.");
-                    var isGuardianNameValid = validateInput(guardian_name, "Guardian name is required.");
-                    var isClassValid = validateInput(of_class, "Class is required.");
-                    var isClassValid = validateInput(of_class, "Class is required.");
+                    // Validate each input
+                    var valid = true;
 
-                    // Prevent form submission if any of the inputs are invalid
-                    if (!isNameValid || !isEmailValid || !isPasswordValid) {
-                        e.preventDefault(); // Prevent the form from submitting
+                    $('input').each(function () {
+                        var input = $(this);
+                        var fieldName = input.data('name');
+                        var value = input.val();
+
+                        if (input.attr('type') === 'text' && !value) {
+                            valid = false;
+                            input.addClass('error-border');
+                            input.after('<div class="error">' + fieldName + ' is required</div>');
+                        } else if (input.attr('type') === 'radio' && !$('input[name="' + fieldName + '"]:checked').length) {
+                            valid = false;
+                            input.closest('td').append('<div class="error ' + fieldName + '_error ">' + fieldName + ' is required</div>');
+                        } else if (fieldName === 'student_email' && !isValidEmail(value)) {
+                            valid = false;
+                            input.addClass('error-border');
+                            input.after('<div class="error">Invalid email format</div>');
+                        }
+
+                    });
+
+                    if (valid) {
+                        alert('Everything is OK');
+                        // Submit the form here if needed
+                        // $('#add_student').submit();
                     }
                 });
+
+                // Remove error messages and styles on input focus
+                $('input').on('input focus', function () {
+                    $(this).removeClass('error-border');
+                    $(this).siblings('.error').remove();
+                });
+                $('input[type="radio"]').on('click', function () {
+                    var fieldName = $(this).attr('name');
+                    $('input[name="' + fieldName + '"]').removeClass('error-border');
+                    $('input[name="' + fieldName + '"]').closest('td').find('.error').remove();
+                });
+
+                // Email validation function
+                function isValidEmail(email) {
+                    var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    return emailRegex.test(email);
+                }
+                //
             });
         })(jQuery);	
     </script>
